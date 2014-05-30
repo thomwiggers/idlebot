@@ -1,0 +1,50 @@
+#!/bin/sh
+# kFreeBSD do not accept scripts as interpreters, using #!/bin/sh and sourcing.
+if [ true != "$INIT_D_SCRIPT_SOURCED" ] ; then
+    set "$0" "$@"; INIT_D_SCRIPT_SOURCED=true . /lib/init/init-d-script
+fi
+### BEGIN INIT INFO
+# Provides:          skeleton
+# Required-Start:    $remote_fs $syslog $network $local_fs
+# Required-Stop:     $remote_fs $syslog $network $local_fs
+# Default-Start:     5
+# Default-Stop:      0 1 6
+# Short-Description: idle bot
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.  This example start a
+#                    single forking daemon capable of writing a pid
+#                    file.  To get other behavoirs, implemend
+#                    do_start(), do_stop() or other functions to
+#                    override the defaults in /lib/init/init-d-script.
+### END INIT INFO
+
+# Author: Thom Wiggers <thom@thomwiggers.nl>
+
+DESC="IdleBot init script"
+DIR=/home/ircbots/git/idlebot/
+DAEMON=$DIR/bot.sh
+PIDFILE=$DIR/idlebot.pid
+USER=ircbots
+
+case "$1" in
+  start)
+    echo "Starting IdleBot"
+    start-stop-daemon --start --quiet --pidfile $PIDFILE \
+      --user $USER --chuid $USER --exec $DAEMON
+    return $?
+    ;;
+  stop)
+    echo "Stopping IdleBot"
+    start-stop-daemon --stop --quiet --pidfile $PIDFILE \
+      --user $USER --exec $DAEMON
+    errcode=$?
+    [ errcode -eq 0 ] && rm $PIDFILE
+    return errcode
+    ;;
+  *)
+    echo "Usage: $0 (start|stop)"
+    exit 1
+    ;;
+esac
+
+
